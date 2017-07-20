@@ -1,0 +1,103 @@
+sudo apt-get install subversion python-twisted python-mysqldb mysql-server apache2 authbind supervisor python-dev python-pyasn1 python-pip
+sudo svn checkout https://github.com/desaster/kippo.git /opt/kippo
+
+# Create Kippo user
+sudo useradd -d /home/kippo -s /bin/bash -m kippo -g users
+
+# Change permissions for /opt/kippo
+sudo chown -R kippo /opt/kippo
+sudo touch /etc/authbind/byport/22
+sudo chown kippo /etc/authbind/byport/22
+sudo chmod 777 /etc/authbind/byport/22
+
+# Now your choice for installation is your own, by default this command will download Kippo into /opt/kippo
+# First log into MySQL:
+mysql -h localhost -u root -p
+create database kippo;
+GRANT ALL ON kippo.* TO 'kippo'@'localhost' IDENTIFIED BY 'kippop@55';
+exit
+
+# browse to this folder location:
+# /opt/kippo/trunk/doc/sql
+cd /opt/kippo/trunk/doc/sql
+mysql -u kippo -p
+use kippo;
+source mysql.sql;
+show tables;
+exit
+
+#If by chance you have put your honeypot directly on the internet you need to the following additional steps: EXECUTE those commands as ROOT
+# "Adding iptables port forwarding rule...\n"
+sudo apt-get install iptables
+sudo iptables -F -t nat
+sudo iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 22 -j DNAT --to-destination 127.0.0.1:64222
+
+sudo echo "net.ipv4.conf.eth0.route_localnet=1" > /etc/sysctl.conf
+DEBIAN_FRONTEND=noninteractive  apt-get install -q -y iptables-persistent
+
+# We now need to create a kippo.cfg file, don’t panic it’s easy. From the root of the /opt/kippo/trunk folder type this:
+cd /opt/kippo/trunk
+sudo cp kippo.cfg.dist kippo.cfg
+sudo sed -i 's/hostname = svr03/hostname = db03/g' kippo.cfg
+sudo sed -i 's/ssh_version_string = SSH-2.0-OpenSSH_5.1p1 Debian-5/ssh_version_string = SSH-2.0-OpenSSH_5.5p1 Debian-4ubuntu5/g' kippo.cfg
+
+# Now we need to edit the kippo.cfg file with the database details.
+# Using your favourite command line editor (nano is installed so I used that).
+# Navigate the file and find the [database_mysql] section (should all be commented out),
+# un-comment all the fields (including the [database_mysql] one) and modify the values so it looks something like this:
+# [database_mysql]
+# host = localhost
+# database = kippo
+# username = kippo
+# password = kippopass
+sudo nano kippo.cfg
+
+# Also put the those lines to kippo.cfg
+[honeypot]
+ssh_port = 64222
+ssh_addr = 127.0.0.1
+reported_ssh_port = 22
+
+# Use this command to change the listening port for the sshd to 65534:
+sudo sed -i 's:Port 22:Port 65534:g' /etc/ssh/sshd_config
+
+# And then restart your ssh service
+sudo service ssh restart
+
+# Setup kippo to start at boot
+sudo cp start.sh start.sh.backup
+					
+sudo nano start.sh
+# The File must look the above:
+					
+#!/bin/sh
+
+cd /opt/kippo/trunk
+exec /usr/bin/twistd -n -y kippo.tac -l log/kippo.log --pidfile kippo.pid
+
+# Config for supervisor.
+# sudo cat > /etc/supervisor/conf.d/kippo.conf <<EOF
+sudo nano /etc/supervisor/conf.d/kippo.conf
+[program:kippo]
+command=/opt/kippo/trunk/start.sh
+directory=/opt/kippo/trunk
+stdout_logfile=/opt/kippo/trunk/log/kippo.out
+stderr_logfile=/opt/kippo/trunk/log/kippo.err
+autostart=true
+autorestart=true
+redirect_stderr=true
+stopsignal=KILL
+user=kippo
+stopasgroup=true
+# EOF
+					
+sudo supervisorctl update
+sudo supervisorctl status
+
+# Start Kippo. from your /opt/kippo/trunk folder run the following command:
+# ./start.sh
+
+# Modify /opt/kippo/trunk/data/userdb.txt file and restart kippo to add more passwords for kippo from http://www.micheloosterhof.com/kippo-modifications/
+cd /opt/kippo/trunk/data/
+sudo nano userdb.txt
+
