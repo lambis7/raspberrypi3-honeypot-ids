@@ -1,0 +1,16 @@
+# Install kippo-graph requirements from https://bruteforce.gr/kippo-graph EXECUTE AS ROOT
+apt-get update && apt-get install -y libapache2-mod-php5 php5-mysql php5-gd php5-curl
+/etc/init.d/apache2 restart
+exit
+					
+# Install kippo-graph version 1.5.1
+sudo wget http://bruteforce.gr/wp-content/uploads/kippo-graph-1.5.1.tar.gz
+sudo mv kippo-graph-1.5.1.tar.gz /var/www/html
+cd /var/www/html
+sudo tar zxvf kippo-graph-1.5.1.tar.gz
+sudo mv kippo-graph-1.5.1 kippo-graph
+cd kippo-graph
+sudo chmod 777 generated-graphs
+sudo cp config.php.dist config.php
+sudo nano config.php #enter the appropriate values, MySQL values, change Geolocation method from LOCAL to GEOPLUGIN, change check for TOR exit
+										 #nodes to YES.
