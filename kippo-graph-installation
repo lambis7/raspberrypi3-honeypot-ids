@@ -12,5 +12,6 @@ sudo mv kippo-graph-1.5.1 kippo-graph
 cd kippo-graph
 sudo chmod 777 generated-graphs
 sudo cp config.php.dist config.php
-sudo nano config.php #enter the appropriate values, MySQL values, change Geolocation method from LOCAL to GEOPLUGIN, change check for TOR exit
-										 #nodes to YES.
+sudo nano config.php 
+# enter the appropriate values, MySQL values, change Geolocation method from LOCAL to GEOPLUGIN,
+# change check for TOR exit nodes to YES.
