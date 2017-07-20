@@ -104,7 +104,8 @@ sudo chown -R snort:snort /etc/snort
 sudo chown -R snort:snort /var/log/snort
 sudo chown -R snort:snort /usr/local/lib/snort_dynamicrules
 
-# Snort needs some configuration files and the dynamic preprocessors copied from the Snort source tarball into the /etc/snort folder.
+# Snort needs some configuration files and the dynamic preprocessors copied from the Snort source tarball into 
+# the /etc/snort folder.
 # The configuration files are:
 # classification.config
 # file_magic.conf
@@ -170,7 +171,8 @@ sudo snort -T -c /etc/snort/snort.conf -i eth0
 sudo nano /etc/snort/rules/local.rules
 
 # Barnyard2 doesn't read meta-information about alerts from the local.rules file.
-# To make sure that barnyard2 knows that the rule we created with unique identifier 10000001 has the message "ICMP Test Detected", as well as
+# To make sure that barnyard2 knows that the rule we created with unique identifier 10000001 has the 
+# message "ICMP Test Detected", as well as
 # some other information. We add the following line to the /etc/snort/sid-msg.map file:
 # 1 || 10000001 || 001 || icmp-event || 0 || ICMP Test detected || url,tools.ietf.org/html/rfc792
 sudo nano /etc/snort/sid-msg.map
@@ -179,7 +181,8 @@ sudo nano /etc/snort/sid-msg.map
 sudo snort -T -c /etc/snort/snort.conf -i eth0
 
 # Now that we know that Snort correctly loads our rule and our configuration, we can start snort in NIDS
-# mode, and tell it to output any alerts right to the console. We will run Snort from the command line, using the following flags:
+# mode, and tell it to output any alerts right to the console. We will run Snort from the command line, 
+#using the following flags:
 # -A console The `console' option prints fast mode alerts to stdout
 # -q Quiet mode. Don't show banner and status report.
 # -u snort Run Snort as the following user after startup
@@ -189,7 +192,8 @@ sudo snort -T -c /etc/snort/snort.conf -i eth0
 sudo /usr/local/bin/snort -A console -q -u snort -g snort -c /etc/snort/snort.conf -i eth0
 				
 # Use ctrl-c to stop Snort from running. Note that Snort has saved a copy of this information in /var/log/snort,
-# with the name snort.log.nnnnnnnnn (the numbers may be different). At this point Snort is running correctly in NIDS mode and generating alerts.
+# with the name snort.log.nnnnnnnnn (the numbers may be different). At this point Snort is running correctly in 
+# NIDS mode and generating alerts.
 
 
 # Installing Barnyard2
@@ -248,7 +252,8 @@ exit
 # We need to tell Barnyard2 how to connect to the MySQL database. Edit /etc/snort/barnyard2.conf,
 # and at the end of the file add this line: 
 # output database: log, mysql, user=snort password=snortpass dbname=snort host=localhost
-# also on line 70 change config hostname to snort-ids to uniquely identify sensor in the database and uncomment config interface: eth0
+# also on line 70 change config hostname to snort-ids to uniquely identify sensor in the database and uncomment 
+# config interface: eth0
 sudo nano /etc/snort/barnyard2.conf
 
 # Since the password is stored in cleartext in the barnyard2.conf file, we should prevent other users from reading it:
@@ -257,13 +262,15 @@ sudo chmod o-r /etc/snort/barnyard2.conf
 # Run Snort in alert mode
 sudo /usr/local/bin/snort -q -u snort -g snort -c /etc/snort/snort.conf -i eth0
 
-# Ping the interface eth0 from another computer, you won't see any output on the screen because Snort wasn't started with the -A console 
+# Ping the interface eth0 from another computer, you won't see any output on the screen because Snort wasn't 
+# started with the -A console 
 # flag like before. Once the ping stops, type ctrl-c to stop Snort. you should
 # see a new file in the /var/log/snort directory with following name: snort.u2.nnnnnnnnnn
 cd /var/log/snort
 ls -l
 
-# We now run Barnyard2 and tell it to process the events in snort.u2.nnnnnnnnnn and load them into the Snort database. We use the following 
+# We now run Barnyard2 and tell it to process the events in snort.u2.nnnnnnnnnn and load them into the Snort database. 
+# We use the following 
 # flags with Barnyard2:
 # -c /etc/snort/barnyard2.conf The path to the barnyard2.conf file
 # -d /var/log/snort The folder to look for Snort output files
@@ -453,7 +460,8 @@ sudo nano /var/www/html/snorby/config/database.yml
 cd /var/www/html/snorby/
 sudo bundle exec rails server -e production
 
-# This will start Snorby and will be available on port 3000. Navigate to http://<ip_of_snorby_server>:3000 and you should see the logon screen.
+# This will start Snorby and will be available on port 3000. Navigate to http://<ip_of_snorby_server>:3000 and you 
+# should see the logon screen.
 # Don't log in at this time as we are only testing that the software runs. Use ctrl-c to stop the Snorby server.
 				
 # We will use Phusion Passenger, an application server module for Apache to launch Snorby. First install pre-requisites:
@@ -534,7 +542,8 @@ sudo nano /etc/snort/barnyard2.conf
 # Restart Barnyard2 to load the new configuration:
 sudo service barnyard2 restart
 
-# Snorby needs one service running for database maintenance (a Snorby worker daemon). We will create a systemD daemon for this task.
+# Snorby needs one service running for database maintenance (a Snorby worker daemon). We will create a systemD daemon 
+# for this task.
 # First we need to create the service file:
 sudo nano /lib/systemd/system/snorby_worker.service
 
